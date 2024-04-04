@@ -1,30 +1,33 @@
 #' Join current query to another table
 #'
-#' @description Simple wrapper for join functions to join an existing query
-#' to another table in the All of Us database.
-#'
-#' @details
-#'
-#' There are a few good reasons to use aou_join() when possible over the x_join functions from dplyr.
-#' First, it reduces the code necessary to join an existing table to another table. Second,
-#' it includes checks/workarounds for two sources of common errors using dbplyr:
-#' it automatically appends the x_as and y_as arguments to the join call if they are not provided and
-#' it changes the default suffix from .x/.y to _x/_y for cases with shared column names not specified by
-#' the `by` argument which will result in a SQL error.
+#' @description Joins two tables in the All of Us database. A less verbose
+#'   wrapper for the dplyr::*_join() functions with some added safeguards.
+#' @details There are a few good reasons to use aou_join() when possible over
+#' the x_join functions from dplyr. First, it reduces the code necessary to join
+#' an existing table to another table. Second, it includes checks/workarounds
+#' for two sources of common errors using dbplyr: it automatically appends the
+#' x_as and y_as arguments to the join call if they are not provided and it
+#' changes the default suffix from .x/.y to _x/_y for cases with shared column
+#' names not specified by the `by` argument which will result in a SQL error.
 #'
 #' @param data unexecuted SQL query from dbplyr/dplyr.
-#' @param table the omop table (or other remote table in your schema) you wish to join, as a character string, or a tbl object.
-#' @param type the type of join. use types available in dplyr: left, right, inner, anti, full etc.
-#' @param con connection to the allofus SQL database. Defaults to getOption("aou.default.con"), which is set automatically if you use `aou_connect()`
-#' @param ... arguments passed on to the join function. e.g., by = "person_id"
+#' @param table the omop table (or other remote table in your schema) you wish
+#'   to join, as a character string, or a tbl object.
+#' @param type the type of join; types available in dplyr: "left", "right",
+#'   "inner", "anti", "full", etc.
+#' @param con Connection to the allofus SQL database. Defaults to
+#'   `getOption("aou.default.con")`, which is created automatically with
+#'   `aou_connect()`.
 #' @param by columns to join on
-#' @param suffix suffix preferences to add when joining data with the same column names not specified in the by argument.
+#' @param suffix suffix preferences to add when joining data with the same
+#'   column names not specified in the by argument.
 #' @param x_as optional; a string for the name of the left table
 #' @param y_as optional; a string for the name of the right table
-#'
-#' @return Continued dbplyr query
+#' @param ... Additional arguments passed on to the join function
+#' @return Reference to the remote table created by the join.
 #' @export
-#' @importFrom dplyr left_join right_join inner_join anti_join full_join semi_join
+#' @importFrom dplyr left_join right_join inner_join anti_join full_join
+#'   semi_join
 #' @md
 #'
 #' @examplesIf on_workbench()
@@ -40,10 +43,10 @@ aou_join <- function(data,
                      type,
                      by = NULL,
                      suffix = c("_x", "_y"),
-                     con = getOption("aou.default.con"),
                      x_as = NULL,
                      y_as = NULL,
-                     ...) {
+                     ...,
+                     con = getOption("aou.default.con")) {
   if (is.null(con)) {
     cli::cli_abort(c("No connection available.",
       "i" = "Provide a connection automatically by running {.code aou_connect()} before this function.",
@@ -52,6 +55,24 @@ aou_join <- function(data,
   }
 
   if (is.character(table)) y_table <- dplyr::tbl(con, table) else y_table <- table
+
+  if (type %in% c("anti", "semi")) {
+    # don't need extra warning and can't do suffix
+    res <- get(paste(type, "join", sep = "_"))(data, y_table,
+                                               x_as = if (missing(x_as)) {
+                                                 paste(sample(letters, 10, TRUE), collapse = "")
+                                               } else {
+                                                 x_as
+                                               },
+                                               y_as = if (missing(y_as)) {
+                                                 paste(sample(letters, 10, TRUE), collapse = "")
+                                               } else {
+                                                 y_as
+                                               },
+                                               by = by,
+                                               ...)
+    return(res)
+  }
 
   res <- get(paste(type, "join", sep = "_"))(data, y_table,
     x_as = if (missing(x_as)) {

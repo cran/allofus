@@ -1,20 +1,36 @@
 #' Get occurrences of a concept set from AoU for a given cohort
 #'
-#' @param cohort query to a cohort or local dataframe with a column called "person_id", and (possibly) columns for start_date and end_date.
-#' If not provided, defaults to entire All of Us cohort.
+#' @description Retrieves occurrences of a concept set from the All of Us
+#'   database for a given cohort.
+#' @param cohort Reference to a remote table or local dataframe with a column
+#'   called "person_id", and (possibly) columns for `start_date` and `end_date`.
+#'   If not provided, defaults to entire All of Us cohort.
 #' @param concepts a vector of concept ids
-#' @param start_date chr; the name of the start_date column in the cohort table; defaults to NULL to pull data across all dates
-#' @param end_date chr; the name of the end_date column in the cohort table; defaults to NULL to pull data across all dates
-#' @param domains chr; a vector of domains to search for the concepts in ("condition", "measurement", "observation", "procedure", "drug", "device", "visit"); defaults to all
-#' @param output one of "indicator", "count", "all"; do you want to return a 1 if a person has any matching concepts and 0 if not ("indicator"),
-#'  the number of matching concepts per person ("count"), or all info about the matching concepts ("all"). Defaults to "indicator"
-#' @param concept_set_name chr; If output = "indicator" or output = "n", name for that column. Defaults to "concept_set".
-#' @param min_n dbl; If output = "indicator", the minimum number of occurrences per person to consider the indicator true. Defaults to 1.
-#' @param con connection to the allofus SQL database. Defaults to getOption("aou.default.con"), which is set automatically if you use `aou_connect()`
-#' @param collect lgl; whether to collect from the database
+#' @param start_date chr; the name of the start_date column in the cohort table;
+#'   defaults to NULL to pull data across all dates
+#' @param end_date chr; the name of the end_date column in the cohort table;
+#'   defaults to NULL to pull data across all dates
+#' @param domains chr; a vector of domains to search for the concepts in
+#'   ("condition", "measurement", "observation", "procedure", "drug", "device",
+#'   "visit"); defaults to all
+#' @param output one of "indicator", "count", "all"; do you want to return a 1
+#'   if a person has any matching concepts and 0 if not ("indicator"), the
+#'   number of matching concepts per person ("count"), or all info about the
+#'   matching concepts ("all"). Defaults to "indicator"
+#' @param concept_set_name chr; If output = "indicator" or output = "n", name
+#'   for that column. Defaults to "concept_set".
+#' @param min_n dbl; If output = "indicator", the minimum number of occurrences
+#'   per person to consider the indicator true. Defaults to 1.
+#' @param con Connection to the allofus SQL database. Defaults to
+#'   `getOption("aou.default.con")`, which is created automatically with
+#'   `aou_connect()`.
+#' @param collect Whether to bring the resulting table into local memory
+#'   (`collect = TRUE`) as a dataframe or leave as a reference to a database
+#'   table (for continued analysis using, e.g., `dbplyr`). Defaults to `FALSE.`
 #' @param ... further arguments passed along to `collect()` if `collect = TRUE`
 #'
-#' @return a dataframe if collect = TRUE; a remote tbl if not
+#' @return A dataframe if `collect = TRUE`; a reference to a remote database
+#'   table if not.
 #' @export
 #'
 #' @examplesIf on_workbench()
@@ -51,8 +67,9 @@ aou_concept_set <- function(cohort = NULL,
                             output = "indicator",
                             concept_set_name = "concept_set",
                             min_n = 1,
-                            con = getOption("aou.default.con"),
-                            collect = FALSE, ...) {
+                            collect = FALSE,
+                            ...,
+                            con = getOption("aou.default.con")) {
   if (is.null(con)) {
     cli::cli_abort(c("No connection available.",
       "i" = "Provide a connection automatically by running {.code aou_connect()} before this function.",
@@ -60,8 +77,7 @@ aou_concept_set <- function(cohort = NULL,
     ))
   }
 
-
-  if(is.date({{start_date}}) | is.date({{end_date}})){
+  if (is.date({{ start_date }}) | is.date({{ end_date }})) {
     cli::cli_abort(c("If used, start_date and end_date must be strings that refer to columns in your cohort table, not dates."))
   }
 
@@ -84,22 +100,15 @@ aou_concept_set <- function(cohort = NULL,
         dplyr::select("person_id")
       if (!collect && (!is.null(start_date) || !is.null(end_date))) {
         # can't have these both because we can't join (on the dates) without collecting
-        cli::cli_warn(c("Cannot have {.code collect = FALSE} and also provide start and end dates.",
+        cli::cli_warn(c("Cannot have {.code collect = FALSE} and also provide start and end dates in a dataframe.",
           ">" = "Changing to {.code collect = TRUE}."
         ))
         collect <- TRUE
         must_collect <- TRUE
       }
     } else {
-      tmp <- cohort %>% dplyr::select("person_id", dplyr::any_of(c({{start_date}}, {{end_date}})))
+      tmp <- cohort %>% dplyr::select("person_id", dplyr::any_of(c({{ start_date }}, {{ end_date }})))
     }
-  }
-
-  if (is.null(con)) {
-    cli::cli_abort(c("No connection available.",
-      "i" = "Provide a connection automatically by running {.code aou_connect()} before this function.",
-      "i" = "You can also provide {.code con} as an argument or default with {.code options(aou.default.con = ...)}."
-    ))
   }
 
   if (!all(domains %in% c("condition", "measurement", "observation", "procedure", "drug", "device", "visit"))) {
@@ -109,7 +118,7 @@ aou_concept_set <- function(cohort = NULL,
   }
 
   if (is.null(start_date) || is.data.frame(cohort)) {
-    tmp <- dplyr::mutate(tmp, start_date = as.Date("1970-01-01"))
+    tmp <- dplyr::mutate(tmp, start_date = as.Date("1900-01-01"))
     start_date <- "start_date"
   }
   if (is.null(end_date) || is.data.frame(cohort)) {
@@ -119,8 +128,8 @@ aou_concept_set <- function(cohort = NULL,
 
   # now no matter what there will be start_date and end_date columns
   tmp <- dplyr::mutate(tmp,
-    start_date = .data[[{{start_date}}]],
-    end_date = .data[[{{end_date}}]]
+    start_date = .data[[{{ start_date }}]],
+    end_date = .data[[{{ end_date }}]]
   )
 
   all_concepts <- data.frame(
@@ -156,11 +165,11 @@ aou_concept_set <- function(cohort = NULL,
   if (must_collect) {
     # collect to restrict the concepts between the given start and end dates
     all_concepts <- dplyr::collect(all_concepts) %>%
-      dplyr::right_join(cohort, by = dplyr::join_by("person_id", dplyr::between("concept_date", "start_date", "end_date")))
+      dplyr::right_join(cohort, by = dplyr::join_by("person_id", between("concept_date", "start_date", "end_date")))
     cohort_w_concepts <- all_concepts
   } else {
     cohort_w_concepts <- dplyr::right_join(all_concepts, tmp,
-      by = dplyr::join_by("person_id", dplyr::between("concept_date", "start_date", "end_date"))
+      by = dplyr::join_by("person_id", between("concept_date", "start_date", "end_date"))
     )
   }
 
@@ -247,10 +256,14 @@ aou_concept_set <- function(cohort = NULL,
     return(res)
   }
 }
+
 #' Retrieves domain concepts for a given cohort and time range
 #'
-#' @param con connection to the allofus SQL database. Defaults to getOption("aou.default.con"), which is set automatically if you use `aou_connect()`
-#' @param cohort A data frame containing person IDs
+#' @param con Connection to the allofus SQL database. Defaults to
+#'   `getOption("aou.default.con")`, which is created automatically with
+#'   `aou_connect()`.
+#' @param cohort Reference to a remote table or local dataframe with a column
+#'   called "person_id"
 #' @param concepts A vector of concept IDs to retrieve
 #' @param start_date The start date of the time range to retrieve concepts for
 #' @param end_date The end date of the time range to retrieve concepts for
@@ -260,8 +273,9 @@ aou_concept_set <- function(cohort = NULL,
 #' @param ... Additional arguments not currently used
 #'
 #' @noRd
+#' @keywords internal
 
-get_domain_concepts <- function(cohort, concepts, start_date, end_date, tbl_name, date_column, concept_id_column, con = getOption("aou.default.con"), ...) {
+get_domain_concepts <- function(cohort, concepts, start_date, end_date, tbl_name, date_column, concept_id_column, ..., con = getOption("aou.default.con")) {
   domain_tbl <- dplyr::tbl(con, tbl_name) %>%
     dplyr::select("person_id",
       concept_date = dplyr::all_of(date_column), concept_id = dplyr::all_of(concept_id_column),
@@ -272,7 +286,7 @@ get_domain_concepts <- function(cohort, concepts, start_date, end_date, tbl_name
     # suffix is needed because the cohort and domain tables have the same column names
     dplyr::left_join(domain_tbl, by = "person_id", suffix = c(tbl_name, "")) %>%
     dplyr::filter(.data$concept_id %in% concepts) %>%
-    dplyr::filter(dplyr::between(.data$concept_date, .data$start_date, .data$end_date)) %>%
+    dplyr::filter(between(.data$concept_date, .data$start_date, .data$end_date)) %>%
     dplyr::left_join(dplyr::select(dplyr::tbl(con, "concept"), "concept_id", "concept_name", "domain_id"),
       by = "concept_id"
     ) %>%

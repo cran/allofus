@@ -7,8 +7,9 @@
 aou_ls_workspace(pattern = "", silent = FALSE, ...)
 }
 \arguments{
-\item{pattern}{Regular expression, such as "*.csv" or a single file name e.g., "mydata.csv".
-Default will find all files apart from notebooks (.ipynb files).}
+\item{pattern}{Regular expression, such as "*.csv" or a single file name
+e.g., "mydata.csv". Default will find all files apart from notebooks
+(.ipynb, .Rmd, .qmd files).}
 
 \item{silent}{Whether to omit the names of files found. Defaults to \code{FALSE}.}
 
@@ -18,8 +19,8 @@ Default will find all files apart from notebooks (.ipynb files).}
 A vector of file names
 }
 \description{
-The files stored in a workspace are not easily visible from a notebook. List
-all files in the workspace (apart from notebooks) or files matching a certain pattern.
+Lists all data files in the workspace or files matching a
+certain pattern.
 }
 \examples{
 my_workspace_files <- aou_ls_workspace(silent = TRUE)

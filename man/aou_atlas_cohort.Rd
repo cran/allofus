@@ -7,47 +7,53 @@
 aou_atlas_cohort(
   cohort_definition,
   cohort_sql,
-  persistence_window = 548,
-  end_date_buffer = 60,
-  exclude_aou_visits = FALSE,
   debug = FALSE,
-  ...
+  collect = FALSE,
+  ...,
+  con = getOption("aou.default.con")
 )
 }
 \arguments{
-\item{cohort_definition}{A cohort definition generated using \verb{getCohortDefinition() from ROhdsiWebApi}}
+\item{cohort_definition}{A cohort definition generated using
+\verb{getCohortDefinition() from ROhdsiWebApi}}
 
 \item{cohort_sql}{The cohort_sql generated using \verb{getCohortSql() from ROhdsiWebApi}}
 
-\item{persistence_window}{Longest allowable time between visits for the same observation period. Defaults to 548 (see details)}
-
-\item{end_date_buffer}{Number of days to add to last observed date. Defaults to 60 (see details)}
-
-\item{exclude_aou_visits}{Whether to exclude All of Us clinical visits (i.e., for program-specific measurements,
-not part of the participants' typical EHR) from the observation period. Defaults to \code{FALSE}}
-
 \item{debug}{Print the query to the console; useful for debugging.}
 
+\item{collect}{Whether to bring the resulting table into local memory
+(\code{collect = TRUE}) as a dataframe or leave as a reference to a database
+table (for continued analysis using, e.g., \code{dbplyr}). Defaults to \code{FALSE.}}
+
 \item{...}{Further arguments passed along to \code{collect()} if \code{collect = TRUE}}
+
+\item{con}{Connection to the allofus SQL database. Defaults to
+getOption("aou.default.con"), which is set automatically if you use
+\code{aou_connect()}}
 }
 \value{
-A dataframe with the resulting cohort. The SQL query used to generate the cohort is stored as an attribute.
+A dataframe if \code{collect = TRUE}; a reference to a remote database
+table if not. The SQL query used to generate the cohort is stored as an
+attribute.
 }
 \description{
-This function retrieves a cohort definition from ATLAS and generates the cohort in All of Us.
-Observation periods are first generated for each subject using the \code{\link[=aou_observation_period]{aou_observation_period()}} function.
-The resulting cohort is a dataframe with the cohort start and end dates for each subject.
-The function is based on a similar function in \url{https://github.com/cmayer2/r4aou} with some tweaks
-to generate the appropriate observation periods and incorporate other package functions.
-Please see the online vignette for additional details insert link here
+Retrieves a cohort definition from ATLAS and generates the cohort in All of
+Us. Observation periods are first generated for each subject using the
+\code{aou_observation_period()} function.The resulting cohort is a table with the
+cohort start and end dates for each person_id.
 }
 \details{
-Follows conventions described here: \url{https://ohdsi.github.io/CommonDataModel/ehrObsPeriods.html}
+The function is based on a similar function in
+\url{https://github.com/cmayer2/r4aou} with some tweaks to generate the
+appropriate observation periods and incorporate other package functions.
+Please see the \href{https://roux-ohdsi.github.io/allofus/articles/atlas.html}{online vignette} for
+additional details.
 }
 \examples{
 \dontshow{if (on_workbench()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # generate a simple stroke cohort
 # see https://atlas-demo.ohdsi.org/#/cohortdefinition/1788061
+# If this cohort is not available, you can create one, or choose one already made.
 # aou_cohort_example contains the results of
 # cd <- ROhdsiWebApi::getCohortDefinition(1788061, "https://atlas-demo.ohdsi.org/WebAPI")
 # cd_sql <- ROhdsiWebApi::getCohortSql(cd, "https://atlas-demo.ohdsi.org/WebAPI")

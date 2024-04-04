@@ -1,9 +1,9 @@
 # AoU helpers
 
 #' Check to see whether you are on the All of Us workbench
-#' @description Use this function to check whether you are on the
-#' All of Us Researcher Workbench. This is useful for writing code that
-#' can be used both on the workbench and locally.
+#' @description Use this function to check whether you are on the All of Us
+#'   Researcher Workbench. This is useful for writing code that can be used both
+#'   on the workbench and locally.
 #' @return TRUE if you are on the workbench, FALSE otherwise
 #' @export
 #' @keywords internal
@@ -15,18 +15,21 @@ on_workbench <- function() {
 
 #' Create a connection to the database in All of Us
 #'
-#'
-#' @description Use this function to create a `BigQueryConnection` object.
-#' You can reference this object to connect to the All of Us database and run
-#' SQL code using, e.g., `dbplyr` or `DBI`. A message is printed with the connection
-#' status (successful or not).
-#' @param CDR The name of the "curated data repository" to connect to. Defaults to
-#' `getOption("aou.default.cdr")`, which is `Sys.getenv('WORKSPACE_CDR')` if not specified otherwise
-#' (i.e., the "mainline" CDR).
-#' On the controlled tier, specify the "base" CDR with `CDR = paste0(Sys.getenv('WORKSPACE_CDR'), "_base")`.
+#' @description Connects to the All of Us database and returns a
+#'   BigQueryConnection object. You can reference this object to query the
+#'   database using R and or SQL code. A message is printed with the connection
+#'   status (successful or not).
+#' @details You can reference this object to connect to the All of Us database
+#'   and run SQL code using, e.g., `dbplyr` or `DBI`. A message is printed with
+#'   the connection status (successful or not).
+#' @param CDR The name of the "curated data repository" to connect to. Defaults
+#'   to `getOption("aou.default.cdr")`, which is `Sys.getenv('WORKSPACE_CDR')`
+#'   if not specified otherwise (i.e., the "mainline" CDR). On the controlled
+#'   tier, specify the "base" CDR with `CDR =
+#'   paste0(Sys.getenv('WORKSPACE_CDR'), "_base")`.
 #' @param ... Further arguments passed along to `DBI::dbConnect()`.
-#'
-#' @return A `BigQueryConnection` object. This object is also saved as an option (`getOption("aou.default.con")`).
+#' @return A `BigQueryConnection` object. This object is also saved as an option
+#'   (`getOption("aou.default.con")`).
 #' @export
 #' @examplesIf on_workbench()
 #' con <- aou_connect()
@@ -36,16 +39,17 @@ on_workbench <- function() {
 #' DBI::dbListTables(con)
 aou_connect <- function(CDR = getOption("aou.default.cdr"), ...) {
   if (packageVersion("dbplyr") == "2.4.0") {
-    stop('
-         dbplyr v2.4.0 is not compatible with the All of Us database (bigquery).
-         Please install either dbplyr v2.3.4 or the development version of dbplyr.
-         # Install {pak}
-         install.packages("pak")
-         # Install dbplyr v2.3.4
-         pak::pkg_install("tidyverse/dbplyr@v2.3.4")
-         # Or install development version of dbplyr
-         pak::pkg_install("tidyverse/dbplyr")
-         # restart your R kernel')
+    cli::cli_abort(c(
+      "dbplyr v2.4.0 is not compatible with the All of Us database (bigquery).;",
+      i = "Please install either dbplyr v2.3.4 or the development version of dbplyr:",
+      "# Install pak",
+      'install.packages("pak")',
+      "# Install dbplyr v2.3.4",
+      'pak::pkg_install("tidyverse/dbplyr@v2.3.4")',
+      "# Or install development version of dbplyr",
+      'pak::pkg_install("tidyverse/dbplyr")',
+      "# restart your R kernel"
+    ), call = NULL)
   }
 
 
@@ -86,19 +90,27 @@ aou_connect <- function(CDR = getOption("aou.default.cdr"), ...) {
 }
 
 #' Execute a SQL query on the All of Us database
+#' @description Executes an SQL query on the All of Us database
 #'
-#' @param query A SQL query (BigQuery dialect) to be executed. Interpreted
-#' with `glue::glue()`, so expressions enclosed with braces will be evaluated.
-#' References to `"{CDR}"` or `"{cdr}"` will be evaluated automatically (see examples).
-#' @param CDR The name of the "curated data repository" that will be used in any
-#' references of the form `"{CDR}"` or `"{cdr}"` in the query (see examples). Defaults to
-#' `getOption("aou.default.cdr")`, which is `Sys.getenv('WORKSPACE_CDR')` if not specified otherwise
-#' (i.e., the "mainline" CDR).
-#' On the controlled tier, specify the "base" CDR with `CDR = paste0(Sys.getenv('WORKSPACE_CDR'), "_base")`.
+#' @param query A SQL query (BigQuery dialect) to be executed. Interpreted with
+#'   `glue::glue()`, so expressions enclosed with braces will be evaluated.
+#'   References to `"{CDR}"` or `"{cdr}"` will be evaluated automatically (see
+#'   examples).
+#' @param collect Whether to bring the resulting table into local memory
+#'   (`collect = TRUE`) as a dataframe or leave as a reference to a database table (for
+#'   continued analysis using, e.g., `dbplyr`). Defaults to `FALSE.`
 #' @param debug Print the query to the console; useful for debugging.
-#' @param ... All other arguments passed to `bigrquery::bq_table_download()`
-#'
-#' @return A dataframe with the results of the query.
+#' @param CDR The name of the "curated data repository" that will be used in any
+#'   references of the form `"{CDR}"` or `"{cdr}"` in the query (see examples).
+#'   Defaults to `getOption("aou.default.cdr")`, which is
+#'   `Sys.getenv('WORKSPACE_CDR')` if not specified otherwise (i.e., the
+#'   "mainline" CDR). On the controlled tier, specify the "base" CDR with `CDR =
+#'   paste0(Sys.getenv('WORKSPACE_CDR'), "_base")`.
+#' @param ... All other arguments passed to `bigrquery::bq_table_download()` if
+#'   `collect = TRUE`.
+#' @param con Connection to the allofus SQL database. Defaults to `getOption("aou.default.con")`,
+#' which is created automatically with `aou_connect()`. Only needed if `collect = FALSE`.
+#' @return A dataframe if `collect = TRUE`; a reference to a remote database table if not.
 #' @export
 #'
 #' @examplesIf on_workbench()
@@ -109,7 +121,7 @@ aou_connect <- function(CDR = getOption("aou.default.cdr"), ...) {
 #'   COUNT(DISTINCT person_id) AS total_number_of_participants
 #'   FROM
 #'   `{CDR}.person`
-#' ")
+#' ", collect = TRUE)
 #'
 #' MEASUREMENT_OF_INTEREST <- "hemoglobin"
 #' aou_sql('
@@ -181,8 +193,8 @@ aou_connect <- function(CDR = getOption("aou.default.cdr"), ...) {
 #'   unit_name
 #' ORDER BY
 #'   N DESC
-#' ', debug = TRUE)
-aou_sql <- function(query, CDR = getOption("aou.default.cdr"), debug = FALSE, ...) {
+#' ', collect = TRUE)
+aou_sql <- function(query, collect = FALSE, debug = FALSE, ..., con = getOption("aou.default.con"), CDR = getOption("aou.default.cdr")) {
   .cdr_objs <- ls(envir = .GlobalEnv, pattern = "^CDR$|^cdr$")
   if (length(.cdr_objs) == 0) {
     CDR <- CDR
@@ -203,12 +215,7 @@ aou_sql <- function(query, CDR = getOption("aou.default.cdr"), debug = FALSE, ..
 
   res <- tryCatch(
     {
-      q <- bigrquery::bq_project_query(
-        Sys.getenv("GOOGLE_PROJECT"),
-        query = glue::glue(query)
-      )
-
-      bigrquery::bq_table_download(q, ...)
+      get_query_table(glue::glue(query), collect = collect, con = con)
     },
     error = function(e) {
       cli::cli_abort(
@@ -225,12 +232,56 @@ aou_sql <- function(query, CDR = getOption("aou.default.cdr"), debug = FALSE, ..
   res
 }
 
+#' Helper function to get result of a query
+#' @param q query
+#' @param collect Whether to bring the resulting table into local memory
+#'   (`collect = TRUE`) as a dataframe or leave as a reference to a database
+#'   table (for continued analysis using, e.g., `dbplyr`). Defaults to `FALSE.`
+#' @param ... Other arguments passed to bigrquery::bq_table_download
+#' @param con Connection to the allofus SQL database. Defaults to
+#'   `getOption("aou.default.con")`, which is created automatically with
+#'   `aou_connect()`.
+#' @keywords internal
+#' @noRd
+
+get_query_table <- function(q, collect = FALSE, ..., con = getOption("aou.default.con")) {
+  if (is.null(con) & isFALSE(collect)) {
+    cli::cli_abort(c("No connection available.",
+      "i" = "Provide a connection automatically by running {.code aou_connect()} before this function.",
+      "i" = "You can also provide {.code con} as an argument or default with {.code options(aou.default.con = ...)}."
+    ))
+  }
+
+  tbl_obj <- bigrquery::bq_project_query(
+    Sys.getenv("GOOGLE_PROJECT"),
+    query = q, temporary = TRUE
+  )
+
+  if (isTRUE(collect)) {
+    return(bigrquery::bq_table_download(tbl_obj, ...))
+  }
+
+  # get the table name to return for future reference.
+  tbl_name <- paste(tbl_obj$project, tbl_obj$dataset, tbl_obj$table, sep = ("."))
+
+  # to deal with display error when printing the output in jupyter
+  res <- dplyr::tbl(con, tbl_name) %>% dplyr::filter(1 > 0)
+
+  res
+}
+
 
 #' List tables in the AoU Database
 #'
-#' @param con Connection to the allofus SQL database. Defaults to `getOption("aou.default.con")`,
-#' which is created automatically with `aou_connect()`
-#' @param remove_na Whether to remove tables that are not in the data dictionary. Defaults to `TRUE`
+#' @description Prints a list of all of the tables in the All of Us Big Query
+#'   Database.
+#'
+#' @param remove_na Whether to remove tables that are not in the data
+#'   dictionary. Defaults to `TRUE`
+#' @param ... Not currently used
+#' @param con Connection to the allofus SQL database. Defaults to
+#'   `getOption("aou.default.con")`, which is created automatically with
+#'   `aou_connect()`.
 #'
 #' @return A dataframe with the table names and the number of columns
 #' @export
@@ -239,7 +290,7 @@ aou_sql <- function(query, CDR = getOption("aou.default.cdr"), debug = FALSE, ..
 #' con <- aou_connect()
 #' aou_tables()
 #'
-aou_tables <- function(con = getOption("aou.default.con"), remove_na = TRUE) {
+aou_tables <- function(remove_na = TRUE, ..., con = getOption("aou.default.con")) {
   if (is.null(con)) {
     cli::cli_abort("No connection specified. Please specify a connection or run {.code aou_test_connect}() to create a connection.")
   }
