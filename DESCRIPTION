@@ -1,7 +1,7 @@
 Package: allofus
 Type: Package
 Title: Interface for 'All of Us' Researcher Workbench
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: 
     c(
       person("Louisa", "Smith", email = "l.smith@northeastern.edu", role = c("aut", "cph"), comment = c(ORCID = "0000-0001-9029-4644")),
@@ -16,7 +16,7 @@ Imports: cli, tidyr, magrittr, dplyr (>= 1.1.4), glue, bigrquery (>=
         rlang, stringr, DBI, lifecycle, bit64
 Suggests: knitr, rmarkdown, testthat (>= 3.0.0), kableExtra, DT,
         googlesheets4, tibble, forcats, gh, SqlRender (>= 1.6.0)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 URL: https://roux-ohdsi.github.io/allofus/,
         https://github.com/roux-ohdsi/allofus
 BugReports: https://github.com/roux-ohdsi/allofus/issues
@@ -24,9 +24,9 @@ VignetteBuilder: knitr
 Depends: R (>= 2.10)
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2024-04-04 20:34:53 UTC; robcavanaugh
+Packaged: 2024-11-05 21:22:35 UTC; robcavanaugh
 Author: Louisa Smith [aut, cph] (<https://orcid.org/0000-0001-9029-4644>),
   Rob Cavanaugh [aut, cre, cph] (<https://orcid.org/0000-0002-2114-6565>)
 Maintainer: Rob Cavanaugh <r.cavanaugh@northeastern.edu>
 Repository: CRAN
-Date/Publication: 2024-04-04 21:02:59 UTC
+Date/Publication: 2024-11-06 08:10:02 UTC

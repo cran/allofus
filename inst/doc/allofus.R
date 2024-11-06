@@ -5,8 +5,19 @@ knitr::opts_chunk$set(
   eval = FALSE
 )
 
+## ----eval = FALSE-------------------------------------------------------------
+#  # Install from CRAN
+#  install.packages("allofus")
+#  
+#  # Or install development version
+#  install.packages("remotes")
+#  remotes::install_github("roux-ohdsi/allofus")
+
 ## -----------------------------------------------------------------------------
 #  library(allofus)
+#  library(dplyr)
+
+## -----------------------------------------------------------------------------
 #  con <- aou_connect()
 
 ## -----------------------------------------------------------------------------

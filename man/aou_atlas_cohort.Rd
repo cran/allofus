@@ -46,17 +46,25 @@ cohort start and end dates for each person_id.
 The function is based on a similar function in
 \url{https://github.com/cmayer2/r4aou} with some tweaks to generate the
 appropriate observation periods and incorporate other package functions.
-Please see the \href{https://roux-ohdsi.github.io/allofus/articles/atlas.html}{online vignette} for
-additional details.
+Please see the \href{https://roux-ohdsi.github.io/allofus/vignettes/atlas.html}{online vignette} for
+additional details. Note that some cohorts may not be compatible with \code{aou_atlas_cohort()} but setting
+generateStats = FALSE in \code{getCohortSql()} can resolve some issues.
 }
 \examples{
-\dontshow{if (on_workbench()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # generate a simple stroke cohort
 # see https://atlas-demo.ohdsi.org/#/cohortdefinition/1788061
 # If this cohort is not available, you can create one, or choose one already made.
 # aou_cohort_example contains the results of
 # cd <- ROhdsiWebApi::getCohortDefinition(1788061, "https://atlas-demo.ohdsi.org/WebAPI")
-# cd_sql <- ROhdsiWebApi::getCohortSql(cd, "https://atlas-demo.ohdsi.org/WebAPI")
+# for some cohorts, you must use the argument generateStats = FALSE or the cohort (its stats)
+# can't be generated on All of Us
+# cd_sql <- ROhdsiWebApi::getCohortSql(cd,
+#                                      "https://atlas-demo.ohdsi.org/WebAPI",
+#                                      generateStats = FALSE)
+
+\dontrun{
+# connect to the database
+con <- aou_connect()
 
 cohort <- aou_atlas_cohort(
   cohort_definition = aou_cohort_example$cd,
@@ -65,5 +73,6 @@ cohort <- aou_atlas_cohort(
 
 # print query that was executed
 cat(attr(cohort, "query"))
-\dontshow{\}) # examplesIf}
+}
+
 }

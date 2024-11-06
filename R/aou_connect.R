@@ -21,7 +21,8 @@ on_workbench <- function() {
 #'   status (successful or not).
 #' @details You can reference this object to connect to the All of Us database
 #'   and run SQL code using, e.g., `dbplyr` or `DBI`. A message is printed with
-#'   the connection status (successful or not).
+#'   the connection status (successful or not). For RStudio users, setting quiet = TRUE
+#'   will silence most (but not all) billing messages.
 #' @param CDR The name of the "curated data repository" to connect to. Defaults
 #'   to `getOption("aou.default.cdr")`, which is `Sys.getenv('WORKSPACE_CDR')`
 #'   if not specified otherwise (i.e., the "mainline" CDR). On the controlled
@@ -114,6 +115,9 @@ aou_connect <- function(CDR = getOption("aou.default.cdr"), ...) {
 #' @export
 #'
 #' @examplesIf on_workbench()
+#'
+#' con <- aou_connect()
+#'
 #' # Examples based on AoU snippets
 #' aou_sql("
 #'   -- Compute the count of unique participants in our All of Us cohort.

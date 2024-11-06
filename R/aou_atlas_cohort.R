@@ -8,8 +8,9 @@
 #'   <https://github.com/cmayer2/r4aou> with some tweaks to generate the
 #'   appropriate observation periods and incorporate other package functions.
 #'   Please see the [online
-#'   vignette](https://roux-ohdsi.github.io/allofus/articles/atlas.html) for
-#'   additional details.
+#'   vignette](https://roux-ohdsi.github.io/allofus/vignettes/atlas.html) for
+#'   additional details. Note that some cohorts may not be compatible with `aou_atlas_cohort()` but setting
+#'   generateStats = FALSE in `getCohortSql()` can resolve some issues.
 #' @param cohort_definition A cohort definition generated using
 #'   `getCohortDefinition() from ROhdsiWebApi`
 #' @param cohort_sql The cohort_sql generated using `getCohortSql() from
@@ -22,13 +23,21 @@
 #'   attribute.
 #' @export
 #'
-#' @examplesIf on_workbench()
+#' @examples
 #' # generate a simple stroke cohort
 #' # see https://atlas-demo.ohdsi.org/#/cohortdefinition/1788061
 #' # If this cohort is not available, you can create one, or choose one already made.
 #' # aou_cohort_example contains the results of
 #' # cd <- ROhdsiWebApi::getCohortDefinition(1788061, "https://atlas-demo.ohdsi.org/WebAPI")
-#' # cd_sql <- ROhdsiWebApi::getCohortSql(cd, "https://atlas-demo.ohdsi.org/WebAPI")
+#' # for some cohorts, you must use the argument generateStats = FALSE or the cohort (its stats)
+#' # can't be generated on All of Us
+#' # cd_sql <- ROhdsiWebApi::getCohortSql(cd,
+#' #                                      "https://atlas-demo.ohdsi.org/WebAPI",
+#' #                                      generateStats = FALSE)
+#'
+#' \dontrun{
+#' # connect to the database
+#' con <- aou_connect()
 #'
 #' cohort <- aou_atlas_cohort(
 #'   cohort_definition = aou_cohort_example$cd,
@@ -37,6 +46,7 @@
 #'
 #' # print query that was executed
 #' cat(attr(cohort, "query"))
+#' }
 #'
 aou_atlas_cohort <- function(cohort_definition,
                              cohort_sql,
@@ -51,6 +61,13 @@ aou_atlas_cohort <- function(cohort_definition,
         "i" = "Use {.code remotes::install_github(\"ohdsi/ROhdsiWebApi\")} to install ROhdsiWebApi."
       )
     )
+  }
+
+  if (is.null(con) & isFALSE(collect)) {
+    cli::cli_abort(c("No connection available.",
+                     "i" = "Provide a connection automatically by running {.code aou_connect()} before this function.",
+                     "i" = "You can also provide {.code con} as an argument or default with {.code options(aou.default.con = ...)}."
+    ))
   }
 
   out <- tryCatch(

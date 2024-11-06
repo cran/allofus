@@ -3,29 +3,34 @@
 
 # `allofus` R Package
 
-The goal of the `allofus` R package is to streamline the use of R within
-the [All of Us Researcher
-Workbench](https://www.researchallofus.org/data-tools/workbench/).
-
-*The `allofus` R package is a not affiliated with or endorsed by the All
-of Us Research Program.*
-
-The `allofus` package helps researchers query the database and build
-transparent and reproducible analysed pipeline. The package allows
-researchers to easily use other database packages, such as `dbplyr` and
-`DBI`, with the All of Us database. The package also includes functions
-to help researchers manage storage in their workspace and bucket, as
-well as take advantage of tools developed for [OMOP
-CDM](https://www.researchallofus.org/faq/what-is-omop/) data.
-
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/roux-ohdsi/allofus/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/roux-ohdsi/allofus/actions/workflows/R-CMD-check.yaml)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/allofus)](https://CRAN.R-project.org/package=allofus)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/allofus)](https://cran.r-project.org/package=allofus)
-[![DOI](https://zenodo.org/badge/659848534.svg)](https://zenodo.org/doi/10.5281/zenodo.10420610)
+[![](https://img.shields.io/badge/DOI-10.1093%2Fjamia%2Focae198-007ec6)](https://www.doi.org/10.1093/jamia/ocae198)
 <!-- badges: end -->
+
+The goal of the `allofus` R package is to streamline the use of R within
+the [All of Us Researcher
+Workbench](https://www.researchallofus.org/data-tools/workbench/). It
+has 4 primary goals:
+
+1.  Facilitate the use of popular `tidyverse` ecosystem of R packages on
+    the Researcher Workbench
+2.  Help researchers more efficiently and accurately extract and
+    synthesize survey data and EHR data
+3.  Increase the interoperability between tools created by the
+    Observational Health Data Sciences and Informatics community (OHDSI)
+    for the [OMOP
+    CDM](https://www.researchallofus.org/faq/what-is-omop/)) and the
+    Researcher Workbench
+4.  Make connecting to the database and managing files simple
+
+*The `allofus` R package was developed by Louisa Smith and Rob Cavanaugh
+at [Northeastern University](https://ohdsi.northeastern.edu) and is not
+affiliated with or endorsed by the All of Us Research Program.*
 
 ### Installation
 
@@ -42,36 +47,23 @@ install.packages("pak")
 pak::pak("roux-ohdsi/allofus")
 ```
 
-On the new RStudio interface on the workbench, you will need to manually
-specify the CRAN mirror to be able to download *any* recently updated
-packages.
-
-``` r
-# specify the mirror directly
-install.packages("allofus", repos = "https://cloud.r-project.org")
-
-# OR set the mirror as an option at the top of your script
-options(repos = c(CRAN = "https://cloud.r-project.org"))
-
-# Github development versions may requires using the remotes package
-install.packages("remotes")
-remotes::install_github("roux-ohdsi/allofus", repos = "https://cloud.r-project.org")
-```
-
 ### Use
 
 Read through the [getting
-started](https://roux-ohdsi.github.io/allofus/articles/allofus.html)
+started](https://roux-ohdsi.github.io/allofus/vignettes/allofus.html)
 vignette to learn how to use the package.
+
+A community workspace on the *All of Us* Researcher Workbench will soon
+be available.
 
 ### Citation
 
 Please cite the `allofus` package as:
 <p>
-Smith L, Cavanaugh R (2023). <em>allofus: Interface for ‘All of Us’
-Researcher Workbench</em>.
-<a href="https://doi.org/10.5281/zenodo.10420610">doi:10.5281/zenodo.10420610</a>,
-<a href="https://roux-ohdsi.github.io/allofus/">https://roux-ohdsi.github.io/allofus/</a>.
+Smith LH, Cavanaugh R (2024). “allofus: An R Package to Facilitate Use
+of the All of Us Researcher Workbench.” <em>Journal of the American
+Medical Informatics Association</em>, ocae198.
+<a href="https://doi.org/10.1093/jamia/ocae198">doi:10.1093/jamia/ocae198</a>.
 </p>
 
 or with
@@ -80,8 +72,17 @@ or with
 citation("allofus")
 ```
 
+*Note: A pre-print of the special issue can be found here:
+<https://doi.org/10.1101/2024.04.10.24305611>*
+
+We also encourage you to reference the specific version of the package
+you use for an analysis. You can look this up with
+
+``` r
+packageVersion("allofus")
+```
+
 ### Bugs
 
 Please leave us comments, requests, and report bugs using the “Issues”
-tab on github located here:
-<https://github.com/roux-ohdsi/allofus/issues>.
+tab on github.
